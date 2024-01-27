@@ -9,7 +9,7 @@ from flask import jsonify, request
 from docx.shared import Inches
 import io
 from docx import Document
-
+from mangum import Mangum
 load_dotenv()
 
 app = Flask(__name__)
