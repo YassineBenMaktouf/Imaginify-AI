@@ -10,6 +10,7 @@ from docx.shared import Inches
 import io
 from docx import Document
 from mangum import Mangum
+
 load_dotenv()
 
 app = Flask(__name__)
@@ -139,8 +140,7 @@ def generate_titles():
         return jsonify({"titles": titles_list})
     else:
         return jsonify({"error": "Failed to generate titles."}), 500
-def generate_text(prompt, max_tokens):
-    pass
+
 DICTIONARY_API_KEY = os.getenv('DICTIONARY_API_KEY')
 
 @app.route('/lookup-word', methods=['GET'])
