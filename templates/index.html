@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Imaginify AI</title>
+        <link href="https://fonts.googleapis.com/css?family=Roboto:400,700&display=swap" rel="stylesheet">
+        <style>
+            #sidebar {
+                height: 100%;
+                width: 0;
+                position: fixed;
+                z-index: 1;
+                top: 0;
+                right: 0;
+                background-color: #333;
+                overflow-x: hidden;
+                transition: 0.5s;
+                padding-top: 60px;
+                color: white;
+                display: flex;
+                flex-direction: column;
+                align-items: flex-start; /* Align items to the left */
+                box-shadow: 0 0 10px rgba(172, 98, 98, 0.5); /* Box shadow added */
+            }
+            #sidebar a {
+                padding: 15px;
+                text-decoration: none;
+                font-size: 20px;
+                color: #e91b1b;
+                display: block;
+                transition: 0.3s;
+                border-bottom: 1px solid #be1212;
+                width: 100%; /* Make links fill the width */
+            }
+            #sidebar a:hover {
+                background-color: #700b0b;
+                color: #f1f1f1;
+            }
+            #sidebar .close-btn {
+                font-size: 30px;
+                cursor: pointer;
+                margin: 10px; /* Add margin for spacing */
+            }
+            #openBtn,
+            #closeBtn {
+                font-size: 30px;
+                cursor: pointer;
+                display: block;
+                transform: rotate(180deg);
+                background-color: #ff1b1b;
+                color: white;
+                padding: 10px;
+                border: none;
+                border-radius: 5px;
+                margin-bottom: 10px;
+                margin-left: auto; /* Move the button to the right */
+            }
+            #openBtn:hover,
+            #closeBtn:hover {
+                background-color: #555;
+            }
+            #targetParagraph {
+                padding: 20px;
+                margin: 20px;
+            }
+            #sidebarInput {
+                margin: 10px;
+                padding: 8px;
+                width: 80%; /* Adjust the width as needed */
+                box-sizing: border-box;
+                background: #555;
+                color: #fff;
+                margin-left: 10%;
+            }
+            #dictbtn{
+                margin: 10px;
+                padding: 8px;
+                box-sizing: border-box;
+                margin-left: 55%;
+                
+            }
+            body {
+                font-family: 'Roboto', sans-serif;
+                padding: 20px;
+                background: linear-gradient(to bottom, #1a1a1a, #333333);
+                color: #fff;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                min-height: 100vh;
+                margin: 0;
+                overflow-y: auto;
+            }
+            #generator-container {
+                text-align: center;
+                max-width: 600px;
+                width: 100%;
+                margin: 0 auto;
+            }
+            #storyOutput, #continuation {
+                margin-top: 20px;
+                padding: 20px;
+                background-color: #444;
+                border-radius: 5px;
+                white-space: pre-wrap;
+                max-width: 500px;
+                overflow: auto;
+            }
+            input, button, select {
+                padding: 10px;
+                margin-top: 10px;
+                background: linear-gradient(to bottom, #8e44ad, #5d2c85); /* Purple Gradient */
+                color: #fff;
+                border: none;
+                border-radius: 5px;
+            }
+            button {
+                cursor: pointer;
+            }
+            select {
+                background-color: #555;
+            }
+            .continuation-card,#continuationSection {
+                cursor: pointer;
+                padding: 10px;
+                margin-top: 10px;
+                background-color: #666;
+                border-radius: 5px;
+                color: #fff;
+            }
+            .continuation-card:hover {
+                background-color: #888;
+            }
+            #continuationOptions, #continuationStoryOutput, #readContinuationButton {
+                display: none;
+            }
+            #storyPrompt, #customContinuationPrompt {
+                padding: 10px;
+                margin-top: 10px;
+                background: #555;
+                color: #fff;
+                border: none;
+                border-radius: 5px;
+            }
+            .container {
+                margin-top: 40px; /* Adjust the top margin as needed */
+            }
+            header {
+                position: fixed;
+                top: 0;
+                width: 100%;
+                background: #333;
+                padding: 10px 20px;
+                text-align: center;
+                z-index: 1000;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+            header h1 {
+                margin: 0;
+                color: #fff;
+                margin-left: 10px;
+            }
+            header img {
+                height: 50px;
+                border-radius: 50px;
+            }
+            #openBtn{
+                position: fixed;
+                right:15px;
+                top: 50%;
+            }
+            .loader {
+                border: 4px solid #f3f3f3;
+                border-top: 4px solid #3498db; 
+                border-radius: 50%;
+                width: 20px;
+                height: 20px;
+                animation: spin 2s linear infinite;
+              }
+              @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+              }
+        </style>
+    </head>
+    <body >
+        <header>
+            <img src="/static/generated_images/Imaginify-AI.png" alt="Logo">
+            <h1>Imaginify AI</h1>
+        </header>
+        <button id="openBtn" onclick="openNav()">➔</button>
+    <div class="container">
+        <div class="form-group">
+            <label for="storyPrompt">Story Suggestion:</label>
+            <input type="text" id="storyPrompt" placeholder="Enter a story suggestion" required>
+            <button onclick="startDictation('storyPrompt')">🎙️</button>
+        </div>
+        <div class="form-group">
+            <label for="storyCategory">Select Category:</label>
+            <select id="storyCategory" required>
+                    <option value="">None</option>
+                    <option value="fantasy">fantasy</option>
+                    <option value="mystery">mystery</option>
+                    <option value="apocalyptic">apocalyptic</option>
+                    <option value="romance">romance</option>
+                    <option value="crime">crime</option>
+                    <option value="thriller">thriller</option>
+                    <option value="science fiction">science fiction</option>
+                    <option value="horror">horror</option>
+                    <option value="children's">children's</option>
+                    <option value="adventure">adventure</option>
+                    <option value="action">action</option>
+                    <option value="paranormal">paranormal</option>
+                    <option value="humor">humor</option>
+                    <option value="suspense">suspense</option>
+                    <option value="detective">detective</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="lineCount">Number of lines:</label>
+            <input type="number" id="lineCount" placeholder="10" min="1" max="20" required>
+        </div>
+        <button id="generateStoryButton" onclick="generateStory()">Generate Story</button>
+        <div id="loadingIndicator" style="display: none;">
+          <div class="loader"></div>
+        </div>
+    </div>
+    <div id="storySection" class="container">
+        <div id="storyOutput"></div>
+        <button id="readStoryButton" onclick="readAloud('storyOutput')" style="display:none;">Read Story</button>
+    </div>
+    <div id="continuationStoryOutput"></div>
+    <div id="continuationSection" class="container">
+        <div id="continuationOptions"></div>
+        <button id="readContinuationButton" onclick="readAloud('continuationStoryOutput')" style="display:none;">Read Continuation</button>
+    </div>
+    <button id="downloadStoryButton" onclick="downloadStory()">Download Story</button>
+    <div id="sidebar">
+        <a href="javascript:void(0)" class="close-btn" onclick="closeNav()">➔ Dictionary</a>
+        <input type="text" id="sidebarInput" placeholder="Enter a word"> 
+        <button id="dictbtn" onclick="lookupWord()">Explain word</button>
+        <div id="definitionContainer"></div>
+    </div>
+
+<script>
+let storyParts = [];
+let storyPrompts = [];
+async function generateStory() {
+    const generateButton = document.getElementById('generateStoryButton');
+    const prompt = document.getElementById('storyPrompt').value;
+    const category = document.getElementById('storyCategory').value;
+    const lines = document.getElementById('lineCount').value || '10';
+
+    generateButton.innerHTML = '<div class="loader"></div>'; 
+    generateButton.disabled = true;
+
+    if (!prompt.trim()) {
+        alert('Please enter a story prompt.');
+        generateButton.innerHTML = 'Generate Story';
+        generateButton.disabled = false;
+        return;
+    }
+
+    try {
+        const response = await fetch('/generate-story', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt: prompt, category: category, lines: lines })
+        });
+
+        const data = await response.json();
+        if (response.ok && data.story) {
+            displayStoryLetterByLetter(data.story, 'storyOutput', () => {
+                if (data.image_filename) {
+                    displayGeneratedImage(data.image_filename, 'storyOutput');
+                }
+                showContinuationOptions();
+                document.getElementById('readStoryButton').style.display = 'block';
+            });
+        } else {
+            document.getElementById('storyOutput').innerText = data.error || 'No story generated. Please try again.';
+        }
+    } catch (error) {
+        console.error('Error during story generation:', error);
+        document.getElementById('storyOutput').innerText = 'Failed to generate story, please try again later.';
+    } finally {
+        generateButton.innerHTML = 'Generate Story';
+        generateButton.disabled = false;
+    }
+}
+
+
+function displayGeneratedImage(imagePath, containerId) {
+    const imageContainer = document.getElementById(containerId);
+    imageContainer.querySelectorAll('img').forEach(img => img.remove());
+    const imageElement = document.createElement('img');
+    imageElement.src = '/static/' + imagePath;
+    imageElement.alt = "Generated Image";
+    imageElement.style.maxWidth = '100%';
+    imageElement.style.display = 'block';
+    imageContainer.appendChild(imageElement);
+}
+    function displayStoryLetterByLetter(storyText, outputElementId, callback) {
+        const outputDiv = document.getElementById(outputElementId);
+        outputDiv.innerText = ''; 
+        let i = 0;
+        const interval = setInterval(() => {
+            if (i < storyText.length) {
+                outputDiv.innerText += storyText[i++];
+            } else {
+                clearInterval(interval);
+                if (callback) callback();
+                outputDiv.scrollIntoView({ behavior: 'smooth' });
+            }
+        }, 20);
+    }
+    
+
+    async function showContinuationOptions() {
+        const continuationOptions = document.getElementById('continuationOptions');
+        continuationOptions.innerHTML = '<h3>Choose a continuation or write your own:</h3>';
+    
+        const storyText = document.getElementById('storyOutput').innerText;
+    
+        const response = await fetch('/generate-titles', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ story: storyText })
+        });
+    
+        if (response.ok) {
+            const data = await response.json();
+            if (data.titles && data.titles.length > 0) {
+                data.titles.forEach(title => {
+                    const card = document.createElement('div');
+                    card.className = 'continuation-card';
+                    card.innerText = title;
+                    card.onclick = () => generateContinuation(title, document.getElementById('lineCount').value || '10');
+                    continuationOptions.appendChild(card);
+                });
+            } else {
+                displayDefaultContinuationOption();
+            }
+        } else {
+            console.error('Failed to fetch continuation titles. Response status:', response.status);
+            displayErrorContinuationOption();
+        }
+    
+        const customInputHTML = `
+            <div style="margin-top: 10px;">
+                <input type="text" id="customContinuationPrompt" placeholder="Your own continuation." required>
+                <button onclick="generateCustomContinuation()">Continue</button>
+            </div>
+        `;
+        continuationOptions.insertAdjacentHTML('beforeend', customInputHTML);
+    
+        continuationOptions.style.display = 'block';
+    }
+    
+    function displayDefaultContinuationOption() {
+        const continuationOptions = document.getElementById('continuationOptions');
+        const defaultCard = document.createElement('div');
+        defaultCard.className = 'continuation-card';
+        defaultCard.innerText = "Click here to add your own continuation";
+        defaultCard.onclick = () => document.getElementById('customContinuationPrompt').focus();
+        continuationOptions.appendChild(defaultCard);
+    }
+    
+    function displayErrorContinuationOption() {
+        const continuationOptions = document.getElementById('continuationOptions');
+        const errorCard = document.createElement('div');
+        errorCard.className = 'continuation-card';
+        errorCard.innerText = "Error fetching suggestions. Please enter your continuation manually.";
+        continuationOptions.appendChild(errorCard);
+    }
+    
+
+
+    function displayContinuationText(continuationText, index) {
+        const storySection = document.getElementById('storySection');
+        const continuationDiv = document.createElement('div');
+        continuationDiv.className = 'continuation-part';
+        continuationDiv.style.marginTop = '20px';
+        continuationDiv.style.padding = '20px';
+        continuationDiv.style.backgroundColor = '#444';
+        continuationDiv.style.borderRadius = '5px';
+        continuationDiv.style.whiteSpace = 'pre-wrap';
+        continuationDiv.style.maxWidth = '500px';
+        continuationDiv.style.overflow =  'auto';
+        continuationDiv.setAttribute('data-index', index);
+        const textContainer = document.createElement('div');
+        textContainer.className = 'part-text';
+        textContainer.innerText = continuationText;
+    
+        const imageContainer = document.createElement('div');
+        imageContainer.className = 'image-container';
+    
+        const regenerateBtn = document.createElement('button');
+        regenerateBtn.innerText = 'Regenerate';
+        regenerateBtn.onclick = () => regeneratePart(index);
+    
+        const likeBtn = document.createElement('button');
+        likeBtn.innerText = '👍';
+        likeBtn.className = 'like-btn';
+        likeBtn.onclick = () => likePart(index);
+    
+        continuationDiv.appendChild(textContainer);
+        continuationDiv.appendChild(imageContainer);
+        continuationDiv.appendChild(regenerateBtn);
+        continuationDiv.appendChild(likeBtn);
+    
+        storySection.appendChild(continuationDiv);
+    }
+    
+    function displayContinuationImage(imageFilename, continuationText, index) {
+        const continuationDivs = document.querySelectorAll('.continuation-part');
+        const continuationDiv = Array.from(continuationDivs).find(div => div.getAttribute('data-index') == index);
+        if (continuationDiv) {
+            let imageContainer = continuationDiv.querySelector('.image-container');
+            if (!imageContainer) {
+                imageContainer = document.createElement('div');
+                imageContainer.className = 'image-container';
+                continuationDiv.appendChild(imageContainer);
+            }
+            imageContainer.innerHTML = '';
+    
+            const imageElement = document.createElement('img');
+            imageElement.src = '/static/' + imageFilename;
+            imageElement.alt = 'Generated Image';
+            imageElement.style.maxWidth = '100%';
+            imageElement.style.display = 'block';
+            imageElement.style.marginTop = '10px';
+    
+            imageContainer.appendChild(imageElement);
+        }
+    }
+    
+    async function generateContinuation(prompt, lines, index = null) {
+        const response = await fetch('/generate-continuation', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ story: prompt, lines: lines, index: index })
+        });
+    
+        if (response.ok) {
+            const data = await response.json();
+            if (data.continuation) {
+                if (index !== null) {
+                    storyParts[index] = data.continuation;
+                    updateContinuationPart(data.continuation, data.image_filename, index);
+                } else {
+                    storyParts.push(data.continuation);
+                    storyPrompts.push(prompt);
+                    const newIndex = storyParts.length - 1;
+                    displayContinuationText(data.continuation, newIndex);
+                    if (data.image_filename) {
+                        displayContinuationImage(data.image_filename, data.continuation, newIndex);
+                    }
+                }
+            } else {
+                alert('No continuation generated. Please try again.');
+            }
+        } else {
+            alert('Failed to generate story continuation, please try again later.');
+        }
+    }
+    
+
+    async function generateCustomContinuation() {
+        const customPrompt = document.getElementById('customContinuationPrompt').value;
+        if (!customPrompt.trim()) {
+            alert('Please enter a continuation prompt.');
+            return;
+        }
+        const lines = document.getElementById('lineCount').value || '10';
+        generateContinuation(customPrompt, lines);
+    }
+    
+
+    function readAloud(elementId) {
+        const text = document.getElementById(elementId).innerText;
+        if ('speechSynthesis' in window) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'en-US';
+            window.speechSynthesis.cancel();
+            window.speechSynthesis.speak(utterance);
+        } else {
+            alert("Your browser doesn't support text-to-speech. Please use a supported browser.");
+        }
+    }
+
+async function regeneratePart(index) {
+    const prompt = storyPrompts[index];
+    const lines = 10;
+
+    try {
+        const response = await fetch('/generate-continuation', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt: prompt, lines: lines, index: index })
+        });
+
+        const data = await response.json();
+        if (data.error) {
+            alert(data.error);
+        } else {
+            updateContinuationPart(data.continuation, data.image_filename, index);
+        }
+    } catch (error) {
+        console.error('Error:', error);
+    }
+}
+    
+    function likePart(index) {
+        const continuationParts = document.querySelectorAll('.continuation-part');
+        if (index < continuationParts.length) {
+            const likeBtn = continuationParts[index].querySelector('button.like-btn');
+            if (likeBtn.classList.contains('liked')) {
+                likeBtn.classList.remove('liked');
+                likeBtn.innerText = '👍';
+            } else {
+                likeBtn.classList.add('liked');
+                likeBtn.innerText = '✔️';
+            }
+        }
+    }
+
+    function updateContinuationPart(newText, newImageFilename, index) {
+        console.log('Updating part at index:', index, 'with new text and image:', newText, newImageFilename);
+        const continuationParts = document.querySelectorAll('.continuation-part');
+        if (index < continuationParts.length) {
+            const partToUpdate = continuationParts[index];
+            const textContainer = partToUpdate.querySelector('.part-text');
+            textContainer.innerText = newText;
+    
+            const oldImage = partToUpdate.querySelector('img');
+            if (oldImage) {
+                oldImage.parentNode.removeChild(oldImage);
+            }
+            
+            if (newImageFilename) {
+                const imageElement = document.createElement('img');
+                imageElement.src = '/static/' + newImageFilename;
+                imageElement.alt = 'Generated Image';
+                imageElement.classList.add('story-image');
+                imageElement.style.maxWidth = '100%';
+                imageElement.style.display = 'block';
+                imageElement.style.marginTop = '10px';
+    
+                partToUpdate.appendChild(imageElement);
+            }
+        } else {
+            console.error('Part index out of range:', index);
+        }
+    }
+
+
+    var sidebarInputElement = document.getElementById('sidebarInput');
+
+    document.body.addEventListener('mouseup', function() {
+        var selectedText = getSelectedText();
+
+        if (selectedText) {
+            sidebarInputElement.value = selectedText;
+            openNav();
+        }
+    });
+
+    function getSelectedText() {
+        var selectedText = '';
+        if (window.getSelection) {
+            selectedText = window.getSelection().toString();
+        }
+        return selectedText.trim();
+    }
+    
+    function openNav() {
+        document.getElementById("sidebar").style.width = "250px";
+    }
+    
+    function closeNav() {
+        document.getElementById("sidebar").style.width = "0";
+    }
+    
+    function startDictation(targetId) {
+        if (window.hasOwnProperty('webkitSpeechRecognition')) {
+            var recognition = new webkitSpeechRecognition();
+    
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            recognition.lang = "en-US";
+            recognition.start();
+    
+            recognition.onresult = function(e) {
+                document.getElementById(targetId).value = e.results[0][0].transcript;
+                recognition.stop();
+                lookupWord();
+            };
+    
+            recognition.onerror = function(e) {
+                alert('Error during dictation: ' + e.error);
+                recognition.stop();
+            };
+        } else {
+            alert("Speech recognition is not supported in this browser. Please use Google Chrome for this feature.");
+        }
+    }
+    
+  /* function lookupWord() {
+        const word = document.getElementById('sidebarInput').value.trim();
+        if (!word) {
+            alert('Please enter a word to lookup.');
+            return;
+        }
+    
+        fetch(`/lookup-word?word=${encodeURIComponent(word)}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                const definitionContainer = document.getElementById('definitionContainer');
+                definitionContainer.innerHTML = '';
+            
+                if (data.error) {
+                    definitionContainer.innerText = 'Error: ' + data.error;
+                    return;
+                }
+            
+                let contentHtml = '';
+            
+                if (data.length === 0) {
+                    contentHtml = '<p>No definitions found.</p>';
+                } else {
+                    data.forEach((item, index) => {
+                        if (item.definition) {
+                            contentHtml += `
+                                <div class="definition-item">
+                                    <p class="definition"><strong>${index + 1}.</strong> ${item.definition}</p>
+                                </div>
+                            `;
+                        }
+                    });
+                }
+            
+                definitionContainer.innerHTML = contentHtml;
+            })
+            .catch(error => {
+                console.error('Error during dictionary lookup:', error);
+                document.getElementById('definitionContainer').innerText = 'Failed to lookup the word, please try again later.';
+            });
+        } */
+        function lookupWord() {
+    const word = document.getElementById('sidebarInput').value.trim();
+    if (!word) {
+        alert('Please enter a word to lookup.');
+        return;
+    }
+
+    fetch(`/lookup-word?word=${encodeURIComponent(word)}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            const definitionContainer = document.getElementById('definitionContainer');
+            definitionContainer.innerHTML = '';
+            if (!Array.isArray(data) || data.length === 0) {
+                definitionContainer.innerText = 'No definitions found.';
+                return;
+            }
+
+            const definitionsHtml = data.map((item, index) => `${index + 1}. ${item.definition}`).join('<br>');
+
+            definitionContainer.innerHTML = `<p><strong>Definitions:</strong><br>${definitionsHtml}</p>`;
+        })
+        .catch(error => {
+            console.error('Error during dictionary lookup:', error);
+            definitionContainer.innerText = 'Failed to lookup the word, please try again later.';
+        });
+}
+async function downloadStory() {
+    let storyParts = [];
+
+    const mainStoryText = document.getElementById('storyOutput').innerText;
+    const mainStoryImages = Array.from(document.getElementById('storyOutput').getElementsByTagName('img')).map(img => img.src);
+    storyParts.push({ text: mainStoryText, images: mainStoryImages });
+
+    document.querySelectorAll('.continuation-part').forEach(part => {
+        const partText = part.querySelector('.part-text').innerText;
+        const partImages = Array.from(part.getElementsByTagName('img')).map(img => img.src);
+        storyParts.push({ text: partText, images: partImages });
+    });
+
+    const response = await fetch('/download-story', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ storyParts })
+    });
+
+    if (response.ok) {
+        const blob = await response.blob();
+        const downloadUrl = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = downloadUrl;
+        link.setAttribute('download', 'YourStory.docx');
+        document.body.appendChild(link);
+        link.click();
+        link.parentNode.removeChild(link);
+    } else {
+        alert('Failed to download the story. Please try again.');
+    }
+}
+
+
+
+
+
+</script>
+</body>
+</html>
