@@ -231,12 +231,12 @@
     </div>
     <div id="storySection" class="container">
         <div id="storyOutput"></div>
-        <button id="readStoryButton" onclick="readAloud('storyOutput')" style="display:none;">Read Story</button>
+        <button id="readStoryButton" onclick="readAloud('storyOutput')" style="display:none;">🎧</button>
     </div>
     <div id="continuationStoryOutput"></div>
     <div id="continuationSection" class="container">
         <div id="continuationOptions"></div>
-        <button id="readContinuationButton" onclick="readAloud('continuationStoryOutput')" style="display:none;">Read Continuation</button>
+        <button id="readContinuationButton" onclick="readAloud('continuationStoryOutput')" style="display:none;">🎧</button>
     </div>
     <button id="downloadStoryButton" onclick="downloadStory()">Download Story</button>
     <div id="sidebar">
@@ -407,10 +407,16 @@ function displayGeneratedImage(imagePath, containerId) {
         likeBtn.innerText = '👍';
         likeBtn.className = 'like-btn';
         likeBtn.onclick = () => likePart(index);
+
+        const readBtn = document.createElement('button');
+        readBtn.innerText = '🎧';
+        readBtn.onclick = () => readAloud(textContainer.id);
+        textContainer.id = `continuation-text-${index}`;
     
         continuationDiv.appendChild(textContainer);
         continuationDiv.appendChild(imageContainer);
         continuationDiv.appendChild(regenerateBtn);
+        continuationDiv.appendChild(readBtn);
         continuationDiv.appendChild(likeBtn);
     
         storySection.appendChild(continuationDiv);
@@ -461,6 +467,7 @@ function displayGeneratedImage(imagePath, containerId) {
                         displayContinuationImage(data.image_filename, data.continuation, newIndex);
                     }
                 }
+                updateStoryTextForContinuationOptions();
             } else {
                 alert('No continuation generated. Please try again.');
             }
@@ -469,6 +476,10 @@ function displayGeneratedImage(imagePath, containerId) {
         }
     }
     
+    function updateStoryTextForContinuationOptions() {
+        const updatedStoryText = storyParts.join('\n\n');
+        showContinuationOptions();
+    }
 
     async function generateCustomContinuation() {
         const customPrompt = document.getElementById('customContinuationPrompt').value;
@@ -719,10 +730,6 @@ async function downloadStory() {
         alert('Failed to download the story. Please try again.');
     }
 }
-
-
-
-
 
 </script>
 </body>
